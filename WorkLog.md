@@ -9,3 +9,4 @@
 | 2026-10-02 | HELPDESK | claude | 프로젝트 폴더 생성, 작업계획서(Plan.md)·KPI(KPI.md)·흐름도 작성 | 완료 |
 | 2026-10-02 | HELPDESK | claude | 다크/라이트 대시보드 웹페이지(/skills/HELPDESK/) 작성 | 완료 |
 | 2026-10-02 | HELPDESK_ingest | claude | RAG vs 온톨로지 PDF 분석, HDK_DocMST·ChunkMST·KnowMST 생성 및 적재(문서 1·조각 5·지식 19) | 완료 |
+| 2026-10-02 | HELPDESK_ingest | claude | LZXP 매뉴얼 GEN·PRJ(743쪽) 목차 기준 자동 분할·추출, 조각 485·지식 1,714행 적재 (이미지 폴더 별도) | 완료 |

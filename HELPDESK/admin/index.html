@@ -219,7 +219,7 @@
     <p>도움말 문서를 지식 그래프로, 질문에는 근거와 함께 답하는 AI 헬프데스크</p>
   </div>
   <div class="spacer"></div>
-  <span class="pill"><span class="dot"></span>Phase 0~1 · 샘플 적재 완료</span>
+  <span class="pill"><span class="dot"></span>Phase 0~1 · PDF 3건 적재</span>
   <span class="pill"><span class="dot off"></span>챗봇 연동 전</span>
 </header>
 <button class="theme-switch" id="themeBtn" role="switch" aria-checked="true" title="다크 / 라이트 전환" aria-label="다크 / 라이트 전환">
@@ -367,7 +367,7 @@ const PHASES = [
   ]],
   ['Phase 1. 적재', [
     ['HDK_DocMST · HDK_ChunkMST · HDK_KnowMST 생성 (postgresql-worker)', 1],
-    ['PDF 추출·청크 분할 — 샘플 1건 적재 완료 (조각은 수동 정리, 자동 분할 미구현)', 1],
+    ['PDF 추출·목차 기준 자동 분할 — PDF 3건 적재 (LZXP 매뉴얼 2건은 규칙 기반 추출, 검수 전)', 1],
     ['PPT·XLSX 파서 (python-worker)', 0],
     ['중복 적재 방지 (파일 해시) — 재실행으로 확인', 1],
     ['폴더 일괄 적재 함수와 문서별 청크 수 리포트', 0],
@@ -418,9 +418,9 @@ const RISKS = [
 
 const TABLES = [
   // 이름, 설명, 필드, 상태(1=생성됨), 현재 행 수
-  ['HDK_DocMST','문서 1건 (파일 1개)','docID(PK) · fileNm · filePath · fileTy · fileHash · title · docTy · pageCnt · charCnt · imgDir · dataPath · summary · procSt · Rmk · 공통',1,'1행'],
-  ['HDK_ChunkMST','문서를 쪼갠 조각 (분석·검색·근거 단위)','chunkID(PK) · docID · seqNo · locTy · pageNo · pageEndNo · secNo · title · content · charCnt · imgFile · anlSt · 공통',1,'5행'],
-  ['HDK_KnowMST','조각에서 추출한 지식 (온톨로지 후보)','knowID(PK) · docID · chunkID · seqNo · kind · subject · statement · evidence · relType · relTarget · attrJson · confidence · anaBy · 공통',1,'19행'],
+  ['HDK_DocMST','문서 1건 (파일 1개)','docID(PK) · fileNm · filePath · fileTy · fileHash · title · docTy · pageCnt · charCnt · imgDir · dataPath · summary · procSt · Rmk · 공통',1,'3행'],
+  ['HDK_ChunkMST','문서를 쪼갠 조각 (분석·검색·근거 단위)','chunkID(PK) · docID · seqNo · locTy · pageNo · pageEndNo · secNo · title · content · charCnt · imgFile · anlSt · 공통',1,'490행'],
+  ['HDK_KnowMST','조각에서 추출한 지식 (온톨로지 후보)','knowID(PK) · docID · chunkID · seqNo · kind · subject · statement · evidence · relType · relTarget · attrJson · confidence · anaBy · 공통',1,'1,733행'],
   ['HDK_ChatLogMST','질문·답변 기록 (K6~K12)','chatID · sessionID · question · answer · srcList · respMs · feedback · resolvedFg · 공통',0,'가안'],
   ['HDK_ToolLogMST','도구 호출 기록 (K15~K17)','callID · chatID · toolID · argJson · resultSt · confirmFg · 공통',0,'가안'],
   ['HDK_EvalQMST','평가 질문셋 (K6~K9)','qID · question · expectedAns · expectedDoc · hasAnsFg',0,'가안'],
@@ -489,7 +489,7 @@ function renderStats() {
   const star = KPIS.filter(k => k[4]).length;
   $('#stats').innerHTML =
     `<div class="card stat"><div class="ring" style="--p:${p.pct}"><b>${p.pct}%</b></div><div><div class="lbl">작업 진행률</div><div class="num">${p.done}/${p.total}</div><div class="cap">완료한 작업</div></div></div>` +
-    `<div class="card stat"><div class="ico">🧭</div><div><div class="lbl">현재 단계</div><div class="num">Phase 0~1</div><div class="cap">준비 · 샘플 PDF 1건 적재 완료</div></div></div>` +
+    `<div class="card stat"><div class="ico">🧭</div><div><div class="lbl">현재 단계</div><div class="num">Phase 0~1</div><div class="cap">준비 · PDF 3건 적재 완료</div></div></div>` +
     `<div class="card stat"><div class="ico">🎯</div><div><div class="lbl">1차 판정 KPI</div><div class="num">${star}개</div><div class="cap">전체 ${KPIS.length}개 · 측정 0개</div></div></div>` +
     `<div class="card stat"><div class="ico">⏳</div><div><div class="lbl">결정 대기</div><div class="num">${DECISIONS.length}건</div><div class="cap">사용자 확인 필요</div></div></div>`;
 }
@@ -562,7 +562,7 @@ $('#gateBody').innerHTML = rows(GATES, g => `<tr><td>${esc(g[0])}</td><td>${esc(
 $('#riskBody').innerHTML = rows(RISKS, r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`);
 $('#tables').innerHTML = rows(TABLES, t => `<div style="margin-bottom:12px"><b class="kid">${esc(t[0])}</b> ` +
   `<span class="tag ${t[3] ? 't-ok' : 't-draft'}">${t[3] ? '생성됨 · ' + esc(t[4]) : '가안'}</span> <span class="muted small">${esc(t[1])}</span><div class="small">${esc(t[2])}</div></div>`) +
-  '<p class="muted small">usr 테이블은 컬럼 추가·삭제가 안 됩니다. 생성된 3개는 PDF 1건(RAG vs 온톨로지)으로 적재한 상태이고, 가안 3개는 승인 후 생성합니다.</p>';
+  '<p class="muted small">usr 테이블은 컬럼 추가·삭제가 안 됩니다. 생성된 3개에는 PDF 3건(RAG 문서 1 · LZXP 매뉴얼 2)이 적재되어 있고, 가안 3개는 승인 후 생성합니다.</p>';
 $('#nodeBody').innerHTML = rows(NODES, n => `<tr><td class="kid">${esc(n[0])}</td><td>${esc(n[1])}</td><td>${esc(n[2])}</td></tr>`);
 $('#edgeBody').innerHTML = rows(EDGES, n => `<tr><td class="kid">${esc(n[0])}</td><td>${esc(n[1])}</td><td>${esc(n[2])}</td></tr>`);
 $('#compBody').innerHTML = rows(COMPS, n => `<tr><td>${esc(n[0])}</td><td>${esc(n[1])}</td><td><code>${esc(n[2])}</code></td></tr>`);

@@ -9,6 +9,7 @@
 |---|---|---|---|---|
 | D001 | 2026-10-02 | HDK 테이블 3종 생성 | usr 테이블 HDK_DocMST · HDK_ChunkMST · HDK_KnowMST 를 camelCase 필드(01_NWSOFT_Table 스타일)로 생성. 컬럼 추가·삭제 불가 | 도메인 접두 HDK 로 이름 충돌 방지, 날짜는 Date 타입이 없어 문자열로 저장, 확장 칸은 attrJson(JSONB) 한 곳에 둠 |
 | D002 | 2026-10-02 | 스킬 폴더 분리 | 웹 대시보드는 HELPDESK, 적재 스킬은 HELPDESK_ingest 로 분리 | HELPDESK 의 main.py 를 직접 관리해야 해서 같은 폴더에 @zio_skill 함수를 두면 등록되지 않음 |
+| D003 | 2026-10-02 | 대용량 이미지 git 제외 | HELPDESK/manual_images/LZXP* 와 .skill_stderr.log 를 .gitignore 에 추가, 이미지는 디스크에만 보관 | LZXP 매뉴얼 이미지가 416MB 라 저장소에 넣으면 이력이 되돌릴 수 없게 비대해짐 |
 
 ## 보류 · 후속 과제
 

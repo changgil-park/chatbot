@@ -71,7 +71,7 @@ HELPDESK_ingest/          @zio_skill 스킬
 
 `01_NWSOFT_Table/` 스타일을 따른다 (접두 + 업무명 + `MST`, 컬럼은 camelCase, 끝에 `regUid · regDt · modUid · modDt`). **`usr` 테이블은 컬럼 추가·삭제가 불가**하다. 아래 3개는 **2026-10-02 실제로 생성되었다** (Decisions D001). 컬럼을 바꿔야 하면 새 이름으로 다시 만든다.
 
-`Zio.entity` 가 지원하는 타입은 Integer · String · Text · Boolean · Float · JSONB 뿐이라 날짜는 `YYYY-MM-DD HH:MM:SS` 문자열로 저장한다. 현재 데이터는 PDF 1건 (문서 1 · 조각 5 · 지식 19행).
+`Zio.entity` 가 지원하는 타입은 Integer · String · Text · Boolean · Float · JSONB 뿐이라 날짜는 `YYYY-MM-DD HH:MM:SS` 문자열로 저장한다. 현재 데이터는 PDF 3건 — 문서 3 · 조각 490 · 지식 1,733행 (RAG 문서 1건은 수동 분석, LZXP 매뉴얼 GEN·PRJ 2건은 목차 기준 규칙 기반 추출).
 
 **HDK_DocMST** — 문서 1건 (파일 1개)
 
@@ -107,12 +107,12 @@ HELPDESK_ingest/          @zio_skill 스킬
 |---|---|---|
 | knowID | String PK | 지식 ID (`DOC000001-K001`) |
 | docID · chunkID · seqNo | String · Integer | 출처 문서 · 출처 조각 · 순서 |
-| kind | String | 용어 / 한계 / 강점 / 비교 / 예시 / 주장 (증상·원인·해결·절차는 헬프데스크 문서용으로 예정) |
+| kind | String | 개념 문서: 용어 / 한계 / 강점 / 비교 / 예시 / 주장. 사용법 매뉴얼: 화면 / 기능 / 필드 / 주의사항 / 연결 (증상·원인·해결은 실제 문의 문서용으로 예정) |
 | subject · statement | String · Text | 항목 이름 · 설명 |
 | evidence | Text | 원문 인용 (근거) |
 | relType · relTarget | String | `(subject)-[relType]->(relTarget)` — 온톨로지 엣지 후보 |
 | attrJson | JSONB | 항목별 구조화 속성 (예: 비교 항목의 rag · ontology 값) |
-| confidence · anaBy | Float · String | 신뢰도 · 분석 주체 (현재 `claude`, 사람 검수 전) |
+| confidence · anaBy | Float · String | 신뢰도 · 분석 주체. `claude`(수동 분석, 1.0) / `parser`(규칙 기반 추출, 0.7). 모두 사람 검수 전 |
 | regUid · regDt · modUid · modDt | String | 공통 |
 
 **추가 예정 (가안)**: `HDK_ChatLogMST` · `HDK_ToolLogMST` · `HDK_EvalQMST` — KPI 측정용 ([KPI.md](KPI.md) 4장). 승인 후 생성한다.
@@ -166,7 +166,7 @@ HELPDESK_ingest/          @zio_skill 스킬
 | 작업 | 담당 | 완료 기준 |
 |---|---|---|
 | `HDK_DocMST` · `HDK_ChunkMST` · `HDK_KnowMST` 생성 | postgresql-worker | 세 테이블 존재, 메타데이터 등록 — **완료 (2026-10-02)** |
-| PDF 추출과 청크 분할 | python-worker | 샘플 1건 적재, 건수가 원본과 일치 — **PDF 1건 완료** (조각은 수동 정리, 자동 분할은 미구현) |
+| PDF 추출과 청크 분할 | python-worker | 샘플 적재, 건수가 원본과 일치 — **PDF 3건 완료** (목차가 있는 매뉴얼은 `lzxp_loader.py` 가 목차 제목으로 자동 분할, 목차 없는 문서는 미구현) |
 | PPT·XLSX 파서 | python-worker | 샘플 형식별 1건씩 적재되고 건수가 원본과 일치 — 예정 |
 | 중복 적재 방지(해시) | python-worker | 같은 파일 재적재 시 행이 늘지 않음 — **완료** (재실행으로 확인) |
 | 폴더 일괄 적재 함수 | python-worker | 전체 파일 적재 후 문서별 청크 수 리포트 — 예정 |
