@@ -260,7 +260,7 @@
   </div>
   <div class="spacer"></div>
   <span class="pill"><span class="dot"></span>Phase 0~1 · PDF 3건 적재</span>
-  <span class="pill"><span class="dot off"></span>챗봇 연동 전</span>
+  <span class="pill"><span class="dot"></span>챗봇 검색 연동</span>
 </header>
 <button class="theme-switch" id="themeBtn" role="switch" aria-checked="true" title="다크 / 라이트 전환" aria-label="다크 / 라이트 전환">
   <span class="ti sun">☀️</span><span class="ti moon">🌙</span><span class="knob"></span>
@@ -366,16 +366,16 @@
     <div class="grid g2">
       <div class="card chat">
         <div class="chat-head"><div class="orb"></div><div><b>HELPDESK AI</b><span class="muted small">지식 그래프 기반 · 근거와 출처를 함께 답변</span></div>
-          <div class="spacer"></div><span class="tag t-off">연동 전</span></div>
-        <div class="log" id="chatLog"><div class="msg bot">안녕하세요. 챗봇은 Phase 3에서 연결됩니다. 지금은 화면 자리만 마련되어 있어요.</div></div>
+          <div class="spacer"></div><span class="tag t-ok">검색 연동</span></div>
+        <div class="log" id="chatLog"><div class="msg bot">안녕하세요. 매뉴얼에서 근거를 찾아 출처와 함께 보여드려요. 지금은 검색 결과만 보여주고, 문장으로 풀어 답하는 기능은 에이전트를 활성화한 뒤에 붙습니다.</div></div>
         <div class="chips" id="chips"></div>
-        <form id="chatForm"><input type="text" id="chatIn" placeholder="질문을 입력하세요 (연동 전)" autocomplete="off"><button type="submit">보내기</button></form>
+        <form id="chatForm"><input type="text" id="chatIn" placeholder="질문을 입력하세요 (예: 품목코드 등록 방법)" autocomplete="off"><button type="submit">보내기</button></form>
       </div>
       <div class="card"><h2>연결 계획</h2>
         <ul class="plain">
-          <li>검색 스킬이 질문을 받아 <code>Zio.node</code> 로 온톨로지를 탐색합니다.</li>
-          <li>답변 모델이 근거 청크의 문서명·위치를 붙여 답합니다.</li>
-          <li>이 패널에서 같은 스킬을 <code>/execute/&lt;함수&gt;</code> 로 호출하는 방식을 검토합니다. 호출 경로는 Phase 3에서 확정합니다.</li>
+          <li>검색 스킬(<code>HELPDESK_ingest/search_manual</code>)이 질문에서 키워드를 뽑아 <code>HDK_KnowMST</code> 에서 근거를 찾습니다. 온톨로지(Phase 2)가 생기면 <code>Zio.node</code> 탐색으로 바꿉니다.</li>
+          <li>답변 모델은 에이전트 초안(app_id 1)에 있고, 웹 에이전트빌더에서 활성화해야 돕니다. 이 패널은 모델 없이 검색 결과와 출처만 보여줍니다.</li>
+          <li>이 패널은 <code>/api/chat</code> 으로 같은 검색 코드를 부릅니다. 키워드 검색이라 매뉴얼과 다른 낱말로 물으면 못 찾을 수 있습니다.</li>
           <li>대화 기록(<code>HDK_ChatLogMST</code> 가안)이 쌓이면 K6~K12 가 이 대시보드에 채워집니다.</li>
         </ul>
       </div>
@@ -448,10 +448,10 @@ const PHASES = [
     ['표기 정리(노드 통합) — 대상 확인 후 승인된 것만', 0],
   ]],
   ['Phase 3. 챗봇 Q&A', [
-    ['검색 스킬 (where_or · with_relations)', 0],
-    ['챗봇 에이전트 초안 (검색 skill → 답변 model)', 0],
-    ['답변 규칙: 출처 필수, 그래프에 없으면 모른다고 답함', 0],
-    ['이 대시보드에 챗봇 패널 연결', 0],
+    ['검색 스킬 (키워드 검색 · 출처 반환) — 평가 질문 15건 단독 측정 통과', 1],
+    ['챗봇 에이전트 초안 (검색 skill → 답변 model), 활성화는 웹에서', 1],
+    ['답변 규칙: 출처 필수, 그래프에 없으면 모른다고 답함', 1],
+    ['이 대시보드에 챗봇 패널 연결 (검색 결과·출처 표시)', 1],
     ['평가 질문셋 30~50개로 정답률 측정', 0],
   ]],
   ['Phase 4. 문제해결 도구 (2차)', [
@@ -523,10 +523,12 @@ const WORKS = [
   ['LZXP 매뉴얼 2건(743쪽) 목차 기준 자동 분할·적재', 'GEN 270조각·922지식, PRJ 215조각·792지식 (규칙 기반 추출, 검수 전). 내장 이미지 1,231장은 폴더에 저장', 'd8a281c', 1],
   ['작업 로그·의사결정 로그·Agent_Context 기록', 'WorkLog.md · Decisions.md(D001~D003) · HELPDESK/Agent_Context.md', 'e1294c5', 1],
   ['계획서·대시보드를 적재 결과에 맞춰 갱신, 원본 PDF 커밋', '테이블 가안 → 실제 필드, 행 수 반영', 'cc872a1 · 8171ab2', 1],
-  ['대시보드에 DB 실시간 현황 연결 (데이터 탭)', '문서별 적재 현황, 지식 분포, 모듈별 화면 수, 지식 탐색과 원문·화면 이미지 보기', '커밋 전', 0],
+  ['대시보드에 DB 실시간 현황 연결 (데이터 탭)', '문서별 적재 현황, 지식 분포, 모듈별 화면 수, 지식 탐색과 원문·화면 이미지 보기', '1786de5', 1],
+  ['KPI 측정용 테이블 3종 생성, 평가 질문 15건 적재', 'HDK_EvalQMST · HDK_ChatLogMST · HDK_ToolLogMST (평가 질문은 Claude 초안, 검수 전)', '832d99e', 1],
+  ['Phase 3 챗봇 — 검색 스킬 · 에이전트 초안 · 대시보드 연결', 'search_manual, 에이전트 app_id 1(초안), /api/chat. 답변 생성은 에이전트 활성화 후', '커밋 전', 0],
 ];
 const KIND_COLOR = {화면:'#22d3ee', 기능:'#8b5cf6', 필드:'#34d399', 주의사항:'#fbbf24', 연결:'#f472b6', 용어:'#60a5fa', 한계:'#f87171', 강점:'#4ade80', 비교:'#c4b5fd', 예시:'#fb923c', 주장:'#94a3b8'};
-const SAMPLES = ['로그인이 안 될 때 어떻게 하나요?', '비밀번호 초기화 절차 알려줘', '이 오류 메시지의 원인은?'];
+const SAMPLES = ['품목코드 등록에서 검사방법 기본값은?', 'QuickMenu 에 등록한 메뉴가 안 보여요', '발주서 분할납기는 어떻게 표시되나요?', '사내 VPN 비밀번호 초기화 방법'];
 
 // ───────── 유틸 ─────────
 const $ = s => document.querySelector(s);
@@ -719,11 +721,17 @@ function ask(v) {
   const log = $('#chatLog');
   log.insertAdjacentHTML('beforeend', `<div class="msg me">${esc(v)}</div><div class="msg bot typing" id="typing"><i></i><i></i><i></i></div>`);
   log.scrollTop = log.scrollHeight;
-  setTimeout(() => {
+  const done = html => {
     const t = $('#typing');
-    if (t) { t.classList.remove('typing'); t.removeAttribute('id'); t.textContent = '챗봇 연동 전입니다. Phase 3에서 연결됩니다.'; }
+    if (t) { t.classList.remove('typing'); t.removeAttribute('id'); t.innerHTML = html; }
     log.scrollTop = log.scrollHeight;
-  }, 900);
+  };
+  api('chat?q=' + encodeURIComponent(v)).then(r => {
+    if (!r.found) return done(`문서에서 찾을 수 없습니다.<div class="muted small" style="margin-top:6px">검색 키워드: ${esc(r.keywords.join(', ') || '없음')}</div>`);
+    done(`<div class="muted small">매뉴얼에서 찾은 내용 ${r.items.length}건 · ${r.ms}ms</div>` + rows(r.items, it =>
+      `<div style="margin-top:10px">${kt(it.kind)} <b>${esc(it.subject)}</b><div style="margin-top:4px">${esc(it.statement.length > 260 ? it.statement.slice(0, 260) + '…' : it.statement)}</div>` +
+      `<div class="muted small" style="margin-top:4px">출처 ${esc(it.doc)} ${esc(it.page || '')}</div></div>`));
+  }).catch(e => done(`검색에 실패했습니다. ${esc(e.message)}`));
 }
 $('#chatForm').onsubmit = e => {
   e.preventDefault();

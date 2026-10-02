@@ -1,5 +1,6 @@
 # HELPDESK 대시보드(admin/)와 이미지를 서빙하고, HDK 테이블 현황을 읽기 전용 API 로 제공하는 웹 스킬 서버
 import os
+import sys
 import time
 from collections import Counter
 from pathlib import Path
@@ -12,6 +13,13 @@ try:
     from zio_ontology import Zio
 except Exception as ex:  # SDK 가 없어도 정적 화면은 떠야 한다
     Zio, ZIO_ERR = None, repr(ex)
+
+# 챗봇 검색은 에이전트가 쓰는 스킬(HELPDESK_ingest/helpdesk_search.py)과 같은 코드를 쓴다
+sys.path.insert(0, str(Path(__file__).parent.parent / "HELPDESK_ingest"))
+try:
+    import helpdesk_search
+except Exception as ex:
+    helpdesk_search, SEARCH_ERR = None, repr(ex)
 
 BASE = Path(__file__).parent
 app = FastAPI(title="HELPDESK")
@@ -109,6 +117,20 @@ def chunk(chunk_id: str):
     doc = ent("HDK_DocMST").where(docID=c["docID"]).columns("title", "imgDir").fetch().data
     stem = Path(doc[0]["imgDir"]).name if doc else ""
     return {k: c[k] for k in ("chunkID", "docID", "seqNo", "secNo", "title", "content", "pageNo", "pageEndNo", "imgFile")} | {"docTitle": doc[0]["title"] if doc else "", "imgStem": stem}
+
+
+@app.get("/api/chat")
+def chat(q: str = ""):
+    """질문을 검색해 근거와 함께 돌려준다. 답변 문장은 만들지 않는다(생성은 에이전트 활성화 후)."""
+    need_sdk()
+    if helpdesk_search is None:
+        raise HTTPException(503, f"검색 모듈을 불러오지 못했습니다: {SEARCH_ERR}")
+    q = q.strip()[:300]
+    if not q:
+        raise HTTPException(400, "질문이 비어 있습니다")
+    t0 = time.time()
+    res = helpdesk_search.search(q, 3)
+    return {**res, "ms": int((time.time() - t0) * 1000)}
 
 
 # 라우트를 먼저 등록하고, 루트 마운트는 맨 마지막에 둔다 (/docs, /api 가 가려지지 않도록)

@@ -30,3 +30,11 @@
 - 평가 질문과 정답 요지는 Claude 가 적재된 지식 행을 보고 쓴 **초안**이다(`reviewSt=초안`). KPI.md 가 요구하는 30~50개·사람 작성에는 못 미친다. 문서 밖 질문 Q014 는 검색으로 없음을 확인하지 않았다.
 - `HDK_ChatLogMST`·`HDK_ToolLogMST` 는 챗봇이 쌓는 표라 0행이 정상이다. `qID` 칸으로 평가 질문과 연결한다.
 - 미결: 질문 로그 보관 기간·마스킹 방침(KPI.md 4장).
+
+## 2026-10-02 (Phase 3 챗봇)
+- 검색은 `HELPDESK_ingest/helpdesk_search.py`. `HDK_KnowMST` 전체(1,733행)를 60초 메모리 캐시에 올려 파이썬에서 키워드 매칭한다(조사·어미 제거, 키워드의 절반 이상 맞아야 `found`). 행이 수만 건으로 늘면 DB 쪽 검색으로 바꿔야 한다. 온톨로지(Phase 2)가 없어 `Zio.node` 가 아니라 지식 표를 읽는다.
+- `search_manual` 의 반환 키는 리터럴로 적어야 에이전트가 `{{search.found}}` 로 쓴다(`{**res}` 로 펼치면 `returns` 에 `context` 만 잡혔다).
+- 에이전트 초안은 `chat_agent.py` 의 `build_chat_agent`(검색 skill → 답변 model). app_id 1, `compile` 통과, 경고 없음. **활성화와 `debug` 는 안 했다** — 입력이 어떻게 `question` 으로 들어오는지(트리거)는 웹 에이전트빌더에서 확인해야 한다. 고치려면 `build_chat_agent(replace_app_id=1)`.
+- 대시보드 패널은 `HELPDESK/main.py` 의 `GET /api/chat` 이 같은 `search()` 를 sys.path 로 import 해 부른다. 모델 호출이 없어 문장 답변 대신 근거 3건과 출처를 보여준다.
+- `eval_search` 결과: 답이 있는 질문 12/12, 문서 밖 3/3. 단, 평가 질문은 적재된 행을 보고 Claude 가 쓴 것이라 쉬운 편이다. KPI K6~K9 판정에 쓰려면 사람이 만든 30~50개로 다시 재야 한다.
+- 알려진 한계: 매뉴얼과 다른 낱말로 물으면 못 찾는다(유의어 없음). 문서 밖 판정은 키워드 일치율이라, 매뉴얼에 있는 낱말이 섞인 문서 밖 질문은 걸릴 수 있다.

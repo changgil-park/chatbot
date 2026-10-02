@@ -12,3 +12,4 @@
 | 2026-10-02 | HELPDESK_ingest | claude | LZXP 매뉴얼 GEN·PRJ(743쪽) 목차 기준 자동 분할·추출, 조각 485·지식 1,714행 적재 (이미지 폴더 별도) | 완료 |
 | 2026-10-02 | HELPDESK | claude | 대시보드에 DB 실시간 현황 연결 (데이터 탭: 적재 현황·지식 분포·모듈별 화면 수·지식 탐색·원문/이미지 보기), 작업 내역 카드 추가 | 완료 |
 | 2026-10-02 | HELPDESK_ingest | claude | KPI 측정용 HDK_EvalQMST·ChatLogMST·ToolLogMST 생성(kpi_tables.py), 평가 질문 초안 15건 적재, 재실행 시 15행 유지 확인 | 완료 |
+| 2026-10-02 | HELPDESK · HELPDESK_ingest | claude | Phase 3 챗봇 — 검색 스킬(search_manual)·에이전트 초안(app_id 1, 컴파일 확인)·대시보드 챗봇 패널(/api/chat) 연결. 평가 질문 15건 검색 단독 측정 통과 | 완료 (에이전트 활성화·화면 호출은 미검증) |
