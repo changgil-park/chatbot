@@ -115,7 +115,7 @@ HELPDESK_ingest/          @zio_skill 스킬
 | confidence · anaBy | Float · String | 신뢰도 · 분석 주체. `claude`(수동 분석, 1.0) / `parser`(규칙 기반 추출, 0.7). 모두 사람 검수 전 |
 | regUid · regDt · modUid · modDt | String | 공통 |
 
-**추가 예정 (가안)**: `HDK_ChatLogMST` · `HDK_ToolLogMST` · `HDK_EvalQMST` — KPI 측정용 ([KPI.md](KPI.md) 4장). 승인 후 생성한다.
+**KPI 측정용 3종 — 2026-10-02 생성 완료 (Decisions D004)**: `HDK_EvalQMST`(평가 질문 초안 15건 적재) · `HDK_ChatLogMST` · `HDK_ToolLogMST`(챗봇이 쌓는 표, 현재 0행). 컬럼은 [KPI.md](KPI.md) 4장 기준이며 `HELPDESK_ingest/kpi_tables.py` 에 정의돼 있다.
 
 - 접두(`HDK`)는 확정했고, 담당자 접미는 테이블에 쓰지 않았다 (접미는 온톨로지 라벨에만 붙인다).
 - 표·이미지가 많은 슬라이드는 텍스트화 손실이 있다. 1차는 텍스트와 표만 다루고 이미지는 폴더에 보관만 한다.

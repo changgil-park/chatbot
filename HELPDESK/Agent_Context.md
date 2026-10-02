@@ -17,3 +17,16 @@
 - 적재는 `start_load`(백그라운드 스레드) → `load_status` 로 본다. 같은 문서를 다시 돌리면 그 문서의 조각·지식 행만 지우고 다시 넣는다(재실행으로 행 수 불변 확인).
 - GEN/PRJ 의 의미(일반/프로젝트)는 파일명과 내용으로 추정한 것이다.
 - 미해결: 분석 데이터 사람 검수, `연결` 행 `relTarget` 이 `가-2단가유형등록` 처럼 화면 제목과 정확히 일치하지 않는 것 정리, 증상·원인·해결 형태의 문서는 아직 없음.
+
+## 2026-10-02 (대시보드 데이터 탭)
+- `HELPDESK/main.py` 가 `Zio` 를 직접 import 해 읽기 전용 API 를 낸다: `/api/overview` · `/api/modules` · `/api/know` · `/api/chunk/{id}`. 쓰기 API 는 없다. 사용자 입력은 `where`/`where_or` 의 값 자리로만 들어간다(이름 자리 금지 규칙). SDK import 가 실패해도 정적 화면은 뜨고 API 만 503.
+- 결과는 30초 캐시한다(overview·modules). 화면의 새로고침 버튼은 `/api/overview?refresh=1` 로 캐시를 비우고 다시 센다.
+- 이미지는 `/manual_images/<문서명>/{pages,embedded}/` 로 서빙한다(디스크 폴더 그대로). 이 폴더는 git 에 없으므로 다른 환경에서는 이미지가 안 뜬다.
+- 데이터 품질로 보이는 것: 지식 행 중 `(이름 없음)` 소제목, 문장 전체가 subject 가 된 행이 있다(예: 소요량 산출 화면). `lzxp_loader.py` 의 소제목 판정 규칙 개선 거리.
+- `PHASES` 체크 상태는 인덱스 기준(localStorage)이라 작업을 중간에 끼우면 저장된 체크가 어긋난다. 새 작업은 단계의 맨 끝에 추가한다.
+
+## 2026-10-02 (KPI 측정용 테이블)
+- `HELPDESK_ingest/kpi_tables.py` 의 `build_kpi_tables` 가 `HDK_EvalQMST`·`HDK_ChatLogMST`·`HDK_ToolLogMST` 를 만들고 평가 질문 15건(근거 있는 12 + 문서 밖 3)을 넣는다. 확인은 `peek_kpi`.
+- 평가 질문과 정답 요지는 Claude 가 적재된 지식 행을 보고 쓴 **초안**이다(`reviewSt=초안`). KPI.md 가 요구하는 30~50개·사람 작성에는 못 미친다. 문서 밖 질문 Q014 는 검색으로 없음을 확인하지 않았다.
+- `HDK_ChatLogMST`·`HDK_ToolLogMST` 는 챗봇이 쌓는 표라 0행이 정상이다. `qID` 칸으로 평가 질문과 연결한다.
+- 미결: 질문 로그 보관 기간·마스킹 방침(KPI.md 4장).
