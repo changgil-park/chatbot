@@ -203,6 +203,46 @@
   .chat form button { padding: 0 20px; border: 0; border-radius: 12px; color: #fff; font: inherit; font-weight: 700; cursor: pointer;
     background: linear-gradient(135deg, var(--a2), var(--a1)); }
 
+  /* 작업 내역 */
+  .wlog { display: grid; gap: 0; }
+  .wl { display: grid; grid-template-columns: 22px 1fr auto; gap: 12px; align-items: start; padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 13.5px; }
+  .wl:last-child { border-bottom: 0; }
+  .wl .ck { width: 18px; height: 18px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; color: #fff; background: linear-gradient(135deg, var(--a1), var(--a2)); margin-top: 1px; }
+  .wl .ck.wip { background: var(--off-soft); color: var(--muted); }
+  .wl b { font-weight: 700; }
+  .wl .sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .wl code { font-size: 12px; }
+  /* 데이터 탭 */
+  .sel { background: var(--input); color: var(--text); border: 1px solid var(--line-strong); border-radius: 10px; padding: 7px 10px; font: inherit; font-size: 13px; max-width: 100%; }
+  .sel:focus { outline: none; border-color: var(--a1); }
+  h2 .sel { margin-left: auto; }
+  .btn { border: 0; border-radius: 10px; padding: 8px 16px; color: #fff; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, var(--a2), var(--a1)); }
+  .btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line-strong); font-weight: 400; }
+  .qbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .qbar input.sel { flex: 1; min-width: 200px; }
+  .split { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .split .tablewrap { max-height: 640px; overflow: auto; }
+  .split tbody tr { cursor: pointer; }
+  .split tbody tr.sel-row { background: var(--info-soft); }
+  .detail { border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--input); max-height: 640px; overflow: auto; font-size: 13.5px; position: sticky; top: 8px; }
+  .detail h3 { margin: 0 0 4px; font-size: 15px; }
+  .detail pre { white-space: pre-wrap; word-break: break-word; font: inherit; margin: 10px 0; padding: 10px; border-radius: 10px; background: var(--card-solid); border: 1px solid var(--line); max-height: 220px; overflow: auto; }
+  .detail img.pg { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #fff; margin-top: 6px; }
+  .thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; }
+  .thumbs img { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; cursor: zoom-in; }
+  .dc { padding: 12px 0; border-bottom: 1px dashed var(--line); }
+  .dc:last-child { border-bottom: 0; }
+  .dc .nums { display: flex; gap: 14px; flex-wrap: wrap; margin: 6px 0; font-size: 12.5px; color: var(--muted); }
+  .dc .nums b { color: var(--text); font-size: 14px; }
+  .seg { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--off-soft); margin: 4px 0 2px; }
+  .seg i { display: block; height: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .legend span::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; background: var(--c); }
+  .mrow { display: grid; grid-template-columns: 130px 1fr 46px; gap: 10px; align-items: center; padding: 5px 0; font-size: 13px; }
+  .mrow .bar { height: 10px; }
+  .mrow .n { text-align: right; font-weight: 700; color: var(--a1); }
+  .kt { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; color: #0b1220; background: var(--c); white-space: nowrap; }
+  @media (max-width: 900px) { .split { grid-template-columns: 1fr; } .detail { position: static; } }
   @media (max-width: 640px) { .g2 { grid-template-columns: 1fr; } header { padding: 20px 100px 0 24px; } .title h1 { font-size: 22px; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
@@ -230,6 +270,7 @@
   <button data-t="kpi">KPI</button>
   <button data-t="plan">작업 계획</button>
   <button data-t="design">설계</button>
+  <button data-t="data">데이터</button>
   <button data-t="chat">챗봇</button>
 </div></nav>
 
@@ -237,6 +278,7 @@
   <!-- 개요 -->
   <section id="overview" class="on">
     <div class="grid g4" id="stats"></div>
+    <div class="card" style="margin-top:16px"><h2>작업 내역 <span class="muted small">2026-10-02 · 완료한 일</span></h2><div class="wlog" id="wlog"></div></div>
     <div class="grid g2" style="margin-top:16px">
       <div class="card"><h2>전체 흐름</h2><img class="flow" id="flowImg" src="images/flow-dark.svg" alt="HELPDESK 전체 흐름도"></div>
       <div class="grid" style="align-content:start">
@@ -291,6 +333,31 @@
     </div>
     <div class="card" style="margin-top:16px"><h2>구성요소</h2>
       <div class="tablewrap"><table><thead><tr><th>구성요소</th><th>구현</th><th>SDK</th></tr></thead><tbody id="compBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- 데이터 (DB 실시간 현황) -->
+  <section id="data">
+    <div id="dErr" class="card" style="display:none;margin-bottom:16px"></div>
+    <div class="grid g4" id="dStats"></div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card"><h2>적재된 문서</h2><div id="docList"><span class="muted small">불러오는 중…</span></div></div>
+      <div class="card"><h2>지식 종류별 분포</h2><div id="kindBars"></div><div class="legend" id="kindLegend"></div></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>모듈별 화면 수 <select id="modDoc" class="sel"></select></h2><div id="modBars"></div></div>
+    <div class="card" style="margin-top:16px">
+      <h2>지식 탐색 <span class="muted small" id="qCount"></span></h2>
+      <div class="qbar">
+        <select id="qDoc" class="sel"></select>
+        <select id="qKind" class="sel"></select>
+        <input id="qText" class="sel" type="text" placeholder="제목·내용 검색 (예: 안전재고)" autocomplete="off">
+        <button id="qGo" class="btn">검색</button>
+        <button id="qReload" class="btn ghost" title="30초 캐시를 건너뛰고 다시 읽기">새로고침</button>
+      </div>
+      <div class="split">
+        <div class="tablewrap"><table><thead><tr><th>종류</th><th>제목</th><th>내용</th></tr></thead><tbody id="qBody"></tbody></table></div>
+        <div class="detail" id="qDetail"><span class="muted small">왼쪽 행을 누르면 원문 조각과 화면 이미지가 보입니다.</span></div>
+      </div>
     </div>
   </section>
 
@@ -371,6 +438,7 @@ const PHASES = [
     ['PPT·XLSX 파서 (python-worker)', 0],
     ['중복 적재 방지 (파일 해시) — 재실행으로 확인', 1],
     ['폴더 일괄 적재 함수와 문서별 청크 수 리포트', 0],
+    ['대시보드에 적재 현황·지식 탐색 연결 (데이터 탭)', 1],
   ]],
   ['Phase 2. 분석 → 온톨로지', [
     ['샘플 청크로 추출 형식 시험, 노드·엣지 확정', 0],
@@ -447,6 +515,17 @@ const COMPS = [
   ['챗봇 에이전트','skill(검색) → model(답변)','Zio.agent.create'],
   ['도구 (2차)','REST / 원격 MCP 등록 후 모델이 호출','Zio.tools'],
 ];
+// 작업 내역 (WorkLog.md · git 이력과 같은 내용). 마지막 값: 1=완료
+const WORKS = [
+  ['작업계획서·목표 KPI·전체 흐름도 작성', 'Plan.md · KPI.md · images/flow.svg — 목표 4개, KPI 17개(1차 판정 8개), 5단계 계획', 'da52196', 1],
+  ['다크/라이트 대시보드 웹페이지', 'FastAPI 정적 서버 + 개요·KPI·계획·설계·챗봇 탭, 우측 상단 테마 스위치', 'da52196', 1],
+  ['RAG vs 온톨로지 PDF 분석과 테이블 3종 생성', 'HDK_DocMST · HDK_ChunkMST · HDK_KnowMST 생성, 문서 1 · 조각 5 · 지식 19행 (직접 분석)', 'c9ad1e7', 1],
+  ['LZXP 매뉴얼 2건(743쪽) 목차 기준 자동 분할·적재', 'GEN 270조각·922지식, PRJ 215조각·792지식 (규칙 기반 추출, 검수 전). 내장 이미지 1,231장은 폴더에 저장', 'd8a281c', 1],
+  ['작업 로그·의사결정 로그·Agent_Context 기록', 'WorkLog.md · Decisions.md(D001~D003) · HELPDESK/Agent_Context.md', 'e1294c5', 1],
+  ['계획서·대시보드를 적재 결과에 맞춰 갱신, 원본 PDF 커밋', '테이블 가안 → 실제 필드, 행 수 반영', 'cc872a1 · 8171ab2', 1],
+  ['대시보드에 DB 실시간 현황 연결 (데이터 탭)', '문서별 적재 현황, 지식 분포, 모듈별 화면 수, 지식 탐색과 원문·화면 이미지 보기', '커밋 전', 0],
+];
+const KIND_COLOR = {화면:'#22d3ee', 기능:'#8b5cf6', 필드:'#34d399', 주의사항:'#fbbf24', 연결:'#f472b6', 용어:'#60a5fa', 한계:'#f87171', 강점:'#4ade80', 비교:'#c4b5fd', 예시:'#fb923c', 주장:'#94a3b8'};
 const SAMPLES = ['로그인이 안 될 때 어떻게 하나요?', '비밀번호 초기화 절차 알려줘', '이 오류 메시지의 원인은?'];
 
 // ───────── 유틸 ─────────
@@ -472,6 +551,7 @@ document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
   document.querySelectorAll('main section').forEach(s => s.classList.toggle('on', s.id === b.dataset.t));
   store.set('helpdesk.tab', b.dataset.t);
+  if (b.dataset.t === 'data') loadData(false);
 });
 
 // ───────── 진행 상태 (체크박스) ─────────
@@ -533,6 +613,107 @@ function renderGroupSummary() {
   });
 }
 
+// ───────── 데이터 탭 (서버 API 로 DB 현황을 읽는다) ─────────
+let DATA = null, dataLoading = false;
+const kt = k => `<span class="kt" style="--c:${KIND_COLOR[k] || '#94a3b8'}">${esc(k)}</span>`;
+const fmt = n => Number(n).toLocaleString('ko-KR');
+async function api(path) {
+  const r = await fetch('api/' + path);
+  if (!r.ok) { let m = r.status; try { m = (await r.json()).detail || m; } catch (e) { /* 본문이 JSON 이 아님 */ } throw new Error(m); }
+  return r.json();
+}
+const imgUrl = (stem, kind, file) => 'manual_images/' + encodeURIComponent(stem) + '/' + kind + '/' + encodeURIComponent(file);
+
+async function loadData(force) {
+  if ((DATA && !force) || dataLoading) return;
+  dataLoading = true;
+  try {
+    DATA = await api('overview' + (force ? '?refresh=1' : ''));
+    $('#dErr').style.display = 'none';
+    renderData();
+  } catch (e) {
+    $('#dErr').style.display = 'block';
+    $('#dErr').innerHTML = `<b>데이터를 불러오지 못했습니다.</b><div class="muted small">${esc(e.message)} — 서버(<code>HELPDESK/main.py</code>)와 Zio SDK 상태를 확인하세요.</div>`;
+  } finally { dataLoading = false; }
+}
+
+function renderData() {
+  const t = DATA.totals, docs = DATA.docs;
+  const pages = docs.reduce((a, d) => a + (d.pageCnt || 0), 0);
+  const stat = (ico, lbl, num, cap) => `<div class="card stat"><div class="ico">${ico}</div><div><div class="lbl">${lbl}</div><div class="num">${num}</div><div class="cap">${cap}</div></div></div>`;
+  $('#dStats').innerHTML = stat('📄', '적재된 문서', fmt(t.HDK_DocMST) + '건', `총 ${fmt(pages)}쪽`) + stat('🧩', '문서 조각', fmt(t.HDK_ChunkMST), 'HDK_ChunkMST') +
+    stat('🧠', '추출된 지식', fmt(t.HDK_KnowMST), 'HDK_KnowMST') + stat('🔎', '검수 상태', '검수 전', '사람 확인 필요');
+
+  $('#docList').innerHTML = rows(docs, d => `<div class="dc"><b>${esc(d.title)}</b> <span class="tag t-off">${esc(d.docTy || '')}</span> <span class="tag ${d.procSt === '분석완료' ? 't-ok' : 't-wait'}">${esc(d.procSt || '')}</span>` +
+    `<div class="nums"><span><b>${fmt(d.pageCnt)}</b> 쪽</span><span><b>${fmt(d.chunks)}</b> 조각</span><span><b>${fmt(d.know)}</b> 지식</span><span>${esc(d.docID)}</span></div>` +
+    `<div class="muted small">${esc((d.summary || '').slice(0, 170))}${(d.summary || '').length > 170 ? '…' : ''}</div></div>`);
+
+  $('#kindBars').innerHTML = rows(docs, d => {
+    const tot = Object.values(d.kinds).reduce((a, b) => a + b, 0) || 1;
+    return `<div style="margin-bottom:12px"><div class="small"><b>${esc(d.title.length > 28 ? d.title.slice(0, 28) + '…' : d.title)}</b> <span class="muted">${fmt(tot)}건</span></div>` +
+      `<div class="seg">${rows(Object.entries(d.kinds), ([k, v]) => `<i style="width:${v / tot * 100}%;background:${KIND_COLOR[k] || '#94a3b8'}" title="${esc(k)} ${v}"></i>`)}</div></div>`;
+  });
+  const used = [...new Set(docs.flatMap(d => Object.keys(d.kinds)))];
+  $('#kindLegend').innerHTML = rows(used, k => `<span style="--c:${KIND_COLOR[k] || '#94a3b8'}">${esc(k)} ${fmt(docs.reduce((a, d) => a + (d.kinds[k] || 0), 0))}</span>`);
+
+  const manual = docs.filter(d => d.kinds['화면']);
+  $('#modDoc').innerHTML = rows(manual, d => `<option value="${esc(d.docID)}">${esc(d.title)}</option>`);
+  $('#modDoc').onchange = () => loadModules($('#modDoc').value);
+  if (manual.length) loadModules(manual[0].docID); else $('#modBars').innerHTML = '<span class="muted small">화면 단위로 쪼갠 문서가 없습니다.</span>';
+
+  $('#qDoc').innerHTML = '<option value="">전체 문서</option>' + rows(docs, d => `<option value="${esc(d.docID)}">${esc(d.title.length > 30 ? d.title.slice(0, 30) + '…' : d.title)}</option>`);
+  $('#qKind').innerHTML = '<option value="">전체 종류</option>' + rows(used, k => `<option>${esc(k)}</option>`);
+  if (!$('#qBody').children.length) search();
+}
+
+async function loadModules(docID) {
+  $('#modBars').innerHTML = '<span class="muted small">불러오는 중…</span>';
+  try {
+    const m = await api('modules?docID=' + encodeURIComponent(docID));
+    const mx = Math.max(...m.map(x => x.count), 1);
+    m.sort((a, b) => parseInt(a.module) - parseInt(b.module));
+    $('#modBars').innerHTML = rows(m, x => `<div class="mrow" title="${esc(x.groups.map(g => g.group + ' ' + g.count).join(' · '))}"><span>${esc(x.module)}</span><div class="bar"><i style="width:${x.count / mx * 100}%"></i></div><span class="n">${x.count}</span></div>`) +
+      '<p class="muted small" style="margin:8px 0 0">막대에 마우스를 올리면 그룹별 화면 수가 보입니다.</p>';
+  } catch (e) { $('#modBars').innerHTML = `<span class="muted small">${esc(e.message)}</span>`; }
+}
+
+async function search() {
+  const qs = new URLSearchParams({ docID: $('#qDoc').value, kind: $('#qKind').value, q: $('#qText').value.trim(), limit: 60 });
+  $('#qBody').innerHTML = '<tr><td colspan="3" class="muted small">검색 중…</td></tr>';
+  try {
+    const r = await api('know?' + qs);
+    $('#qCount').textContent = `${fmt(r.total)}건 중 ${fmt(r.rows.length)}건 표시`;
+    $('#qBody').innerHTML = r.rows.length ? rows(r.rows, (x, i) => `<tr data-i="${i}"><td>${kt(x.kind)}</td><td>${esc(x.subject)}</td><td class="muted small">${esc((x.statement || '').slice(0, 90))}</td></tr>`)
+      : '<tr><td colspan="3" class="muted small">결과가 없습니다.</td></tr>';
+    document.querySelectorAll('#qBody tr[data-i]').forEach(tr => tr.onclick = () => {
+      document.querySelectorAll('#qBody tr').forEach(x => x.classList.toggle('sel-row', x === tr));
+      showDetail(r.rows[+tr.dataset.i]);
+    });
+  } catch (e) { $('#qBody').innerHTML = `<tr><td colspan="3" class="muted small">${esc(e.message)}</td></tr>`; }
+}
+
+async function showDetail(k) {
+  const box = $('#qDetail');
+  box.innerHTML = `<span class="muted small">불러오는 중…</span>`;
+  let c = null;
+  try { c = await api('chunk/' + encodeURIComponent(k.chunkID)); } catch (e) { /* 조각을 못 읽어도 지식 내용은 보여준다 */ }
+  const a = k.attrJson || {};
+  const rel = k.relType ? `<div class="small"><span class="muted">관계</span> ${esc(k.subject.split(' > ')[0])} —[<code>${esc(k.relType)}</code>]→ ${esc(k.relTarget || '')}</div>` : '';
+  const menu = a.menuPath && a.menuPath.length ? `<div class="small"><span class="muted">메뉴</span> ${esc(a.menuPath.join(' › '))}</div>` : '';
+  const cmp = a.rag ? `<div class="small"><span class="muted">RAG</span> ${esc(a.rag)}<br><span class="muted">온톨로지</span> ${esc(a.ontology)}</div>` : '';
+  const stem = c ? c.imgStem : '';
+  const thumbs = stem && a.images && a.images.length ? `<div class="small muted" style="margin-top:10px">화면 캡처 ${a.images.length}장 (앞 6장)</div><div class="thumbs">${rows(a.images.slice(0, 6), f => `<a href="${imgUrl(stem, 'embedded', f)}" target="_blank" rel="noopener"><img loading="lazy" src="${imgUrl(stem, 'embedded', f)}" alt="${esc(f)}"></a>`)}</div>` : '';
+  box.innerHTML = `<h3>${kt(k.kind)} ${esc(k.subject)}</h3><div class="small muted">${esc(k.knowID)} · ${esc(k.anaBy || '')} · 신뢰도 ${k.confidence ?? '-'}</div>` +
+    `<p style="margin:10px 0">${esc(k.statement || '')}</p>${rel}${menu}${cmp}` +
+    (c ? `<div class="small" style="margin-top:12px"><b>원문 조각</b> <span class="muted">${esc(c.docTitle)} · ${esc(c.title)} · p.${c.pageNo}${c.pageEndNo && c.pageEndNo !== c.pageNo ? '~' + c.pageEndNo : ''}</span></div><pre>${esc(c.content)}</pre>` +
+      (stem && c.imgFile ? `<div class="small muted">페이지 미리보기</div><img class="pg" loading="lazy" src="${imgUrl(stem, 'pages', c.imgFile)}" alt="p.${c.pageNo}" onerror="this.style.display='none'">` : '') : '') + thumbs;
+}
+
+$('#qGo').onclick = search;
+$('#qText').onkeydown = e => { if (e.key === 'Enter') search(); };
+$('#qDoc').onchange = $('#qKind').onchange = search;
+$('#qReload').onclick = () => { DATA = null; loadData(true).then(search); };
+
 // ───────── 챗봇 자리 ─────────
 function ask(v) {
   const log = $('#chatLog');
@@ -555,7 +736,8 @@ $('#chips').innerHTML = rows(SAMPLES, s => `<button type="button">${esc(s)}</but
 document.querySelectorAll('#chips button').forEach(b => b.onclick = () => ask(b.textContent));
 
 // ───────── 렌더 ─────────
-$('#goals').innerHTML = rows(GOALS, g => `<div class="goal"><div class="gb g-${g[0]}">${g[0]}</div><div><b>${esc(g[1])}</b> <span class="tag t-off">${g[3]}</span><div class="muted small">${esc(g[2])}</div></div></div>`);
+$('#wlog').innerHTML = rows(WORKS, w => `<div class="wl"><div class="ck ${w[3] ? '' : 'wip'}">${w[3] ? '✓' : '…'}</div><div><b>${esc(w[0])}</b><div class="sub">${esc(w[1])}</div></div><code>${esc(w[2])}</code></div>`);
+$('#goals').innerHTML =rows(GOALS, g => `<div class="goal"><div class="gb g-${g[0]}">${g[0]}</div><div><b>${esc(g[1])}</b> <span class="tag t-off">${g[3]}</span><div class="muted small">${esc(g[2])}</div></div></div>`);
 $('#decisions').innerHTML = rows(DECISIONS, d => `<li>${esc(d)}</li>`);
 $('#decCnt').textContent = DECISIONS.length + '건';
 $('#gateBody').innerHTML = rows(GATES, g => `<tr><td>${esc(g[0])}</td><td>${esc(g[1])}</td></tr>`);
