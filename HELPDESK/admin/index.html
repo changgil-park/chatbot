@@ -1,0 +1,577 @@
+<!-- HELPDESK 프로젝트의 계획·KPI·설계를 보여주는 AI 콘셉트 다크 대시보드 (향후 챗봇 패널이 붙을 자리 포함) -->
+<!doctype html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HELPDESK 대시보드</title>
+<script>
+  // 깜빡임 방지: 저장된 테마를 렌더 전에 적용 (기본은 다크)
+  try { document.documentElement.dataset.theme = JSON.parse(localStorage.getItem('helpdesk.theme')) || 'dark'; } catch (e) {}
+</script>
+<style>
+  :root, [data-theme="dark"] {
+    --bg: #070b16; --bg2: #0b1224; --card: rgba(17, 26, 46, .72); --card-solid: #111a2e; --text: #e6ebf5; --muted: #8b98b3;
+    --line: rgba(148, 163, 184, .16); --line-strong: rgba(148, 163, 184, .3);
+    --a1: #22d3ee; --a2: #8b5cf6; --a3: #f472b6; --accent: #38bdf8;
+    --ok: #34d399; --ok-soft: rgba(52, 211, 153, .14); --warn: #fbbf24; --warn-soft: rgba(251, 191, 36, .14);
+    --info-soft: rgba(56, 189, 248, .14); --vio-soft: rgba(139, 92, 246, .18); --off-soft: rgba(148, 163, 184, .14);
+    --glow: 0 0 0 1px rgba(34, 211, 238, .25), 0 8px 40px -8px rgba(34, 211, 238, .35);
+    --shadow: 0 10px 40px -16px rgba(0, 0, 0, .7);
+    --grid: rgba(148, 163, 184, .06); --input: rgba(7, 11, 22, .6);
+  }
+  [data-theme="light"] {
+    --bg: #f3f6fc; --bg2: #e9eefb; --card: rgba(255, 255, 255, .85); --card-solid: #ffffff; --text: #0f172a; --muted: #5b6b86;
+    --line: rgba(15, 23, 42, .1); --line-strong: rgba(15, 23, 42, .2);
+    --a1: #0891b2; --a2: #7c3aed; --a3: #db2777; --accent: #2563eb;
+    --ok: #059669; --ok-soft: rgba(5, 150, 105, .12); --warn: #b45309; --warn-soft: rgba(217, 119, 6, .14);
+    --info-soft: rgba(37, 99, 235, .1); --vio-soft: rgba(124, 58, 237, .12); --off-soft: rgba(15, 23, 42, .07);
+    --glow: 0 0 0 1px rgba(8, 145, 178, .3), 0 8px 30px -10px rgba(8, 145, 178, .35);
+    --shadow: 0 10px 30px -16px rgba(15, 23, 42, .25);
+    --grid: rgba(15, 23, 42, .05); --input: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  html { color-scheme: dark; }
+  [data-theme="light"] { color-scheme: light; }
+  body {
+    margin: 0; color: var(--text); line-height: 1.55; min-height: 100vh;
+    font-family: 'Pretendard','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',system-ui,sans-serif;
+    background:
+      radial-gradient(900px 500px at 12% -10%, rgba(139, 92, 246, .22), transparent 60%),
+      radial-gradient(800px 480px at 95% 0%, rgba(34, 211, 238, .16), transparent 60%),
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(180deg, var(--bg), var(--bg2));
+    background-attachment: fixed;
+  }
+  [data-theme="light"] body {
+    background:
+      radial-gradient(900px 500px at 12% -10%, rgba(124, 58, 237, .12), transparent 60%),
+      radial-gradient(800px 480px at 95% 0%, rgba(8, 145, 178, .12), transparent 60%),
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 40px,
+      linear-gradient(180deg, var(--bg), var(--bg2));
+  }
+
+  /* 헤더 */
+  header { max-width: 1280px; margin: 0 auto; padding: 28px 110px 0 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .logo { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; flex: none;
+    background: linear-gradient(135deg, var(--a1), var(--a2) 60%, var(--a3)); box-shadow: var(--glow); }
+  .logo svg { width: 26px; height: 26px; }
+  .title h1 { margin: 0; font-size: 26px; letter-spacing: -.02em; line-height: 1.2;
+    background: linear-gradient(90deg, var(--text), var(--a1) 60%, var(--a2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .title p { margin: 2px 0 0; color: var(--muted); font-size: 13.5px; }
+  .spacer { flex: 1; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: 999px; font-size: 12.5px;
+    border: 1px solid var(--line-strong); background: var(--card); color: var(--muted); backdrop-filter: blur(8px); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 10px var(--ok); animation: pulse 2s infinite; }
+  .dot.off { background: var(--muted); box-shadow: none; animation: none; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  /* 우측 상단 고정 테마 스위치 */
+  .theme-switch { position: fixed; top: 16px; right: 20px; z-index: 50; width: 72px; height: 36px; padding: 0; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--line-strong); background: var(--card); backdrop-filter: blur(10px); box-shadow: var(--shadow); transition: box-shadow .2s; }
+  .theme-switch:hover { box-shadow: var(--glow); }
+  .theme-switch:focus-visible { outline: 2px solid var(--a1); outline-offset: 2px; }
+  .theme-switch .ti { position: absolute; top: 0; bottom: 0; display: grid; place-items: center; width: 36px; font-size: 15px; opacity: .55; }
+  .theme-switch .sun { left: 0; } .theme-switch .moon { right: 0; }
+  .theme-switch .knob { position: absolute; top: 3px; left: 3px; width: 28px; height: 28px; border-radius: 50%; transition: transform .25s ease;
+    background: linear-gradient(135deg, var(--a2), var(--a1)); box-shadow: 0 0 14px var(--a1); }
+  [data-theme="dark"] .theme-switch .knob { transform: translateX(36px); }
+  [data-theme="dark"] .theme-switch .moon, [data-theme="light"] .theme-switch .sun { opacity: 1; z-index: 1; }
+
+  /* 탭 */
+  nav { max-width: 1280px; margin: 22px auto 0; padding: 0 24px; }
+  .tabs { display: inline-flex; gap: 4px; padding: 5px; border-radius: 14px; background: var(--card); border: 1px solid var(--line);
+    backdrop-filter: blur(10px); overflow-x: auto; max-width: 100%; }
+  .tabs button { background: none; border: 0; padding: 8px 18px; border-radius: 10px; font: inherit; font-size: 14px; color: var(--muted);
+    cursor: pointer; white-space: nowrap; transition: .15s; }
+  .tabs button:hover { color: var(--text); }
+  .tabs button.on { color: #fff; font-weight: 700; background: linear-gradient(135deg, var(--a2), var(--a1)); box-shadow: 0 6px 20px -6px var(--a1); }
+
+  main { max-width: 1280px; margin: 0 auto; padding: 22px 24px 70px; }
+  section { display: none; }
+  section.on { display: block; animation: rise .35s ease; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .grid { display: grid; gap: 16px; }
+  .g4 { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); }
+  .card { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px;
+    backdrop-filter: blur(14px); box-shadow: var(--shadow); }
+  .card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0; transition: .25s;
+    background: linear-gradient(135deg, var(--a1), transparent 40%, var(--a2)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; }
+  .card:hover::before { opacity: .9; }
+  .card h2, .card h3 { margin: 0 0 14px; font-size: 15px; font-weight: 700; letter-spacing: -.01em; display: flex; align-items: center; gap: 8px; }
+  .card h2::before { content: ''; width: 4px; height: 15px; border-radius: 2px; background: linear-gradient(180deg, var(--a1), var(--a2)); }
+
+  /* 통계 카드 */
+  .stat { display: flex; align-items: center; gap: 16px; }
+  .stat .num { font-size: 32px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1;
+    background: linear-gradient(90deg, var(--text), var(--a1)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .stat .lbl { color: var(--muted); font-size: 12.5px; }
+  .stat .cap { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .ring { --p: 0; width: 64px; height: 64px; border-radius: 50%; flex: none; position: relative;
+    background: conic-gradient(var(--a1) calc(var(--p) * 1%), var(--a2) calc(var(--p) * 1%), var(--off-soft) calc(var(--p) * 1%)); }
+  .ring::after { content: ''; position: absolute; inset: 7px; border-radius: 50%; background: var(--card-solid); }
+  .ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 13px; z-index: 1; }
+  .ico { width: 50px; height: 50px; border-radius: 14px; display: grid; place-items: center; flex: none; font-size: 22px; background: var(--info-soft); }
+
+  /* 태그 */
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: .01em; }
+  .t-star { background: var(--warn-soft); color: var(--warn); }
+  .t-draft { background: var(--vio-soft); color: var(--a2); }
+  [data-theme="dark"] .t-draft { color: #c4b5fd; }
+  .t-ok { background: var(--ok-soft); color: var(--ok); }
+  .t-wait { background: var(--info-soft); color: var(--accent); }
+  .t-off { background: var(--off-soft); color: var(--muted); }
+
+  /* 표 */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  tbody tr { transition: background .15s; }
+  tbody tr:hover { background: var(--info-soft); }
+  tbody tr:last-child td { border-bottom: 0; }
+  .tablewrap { overflow-x: auto; }
+  .kid { font-weight: 800; color: var(--a1); }
+  .grp { display: inline-block; min-width: 30px; text-align: center; padding: 1px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; background: var(--off-soft); }
+  .g-G1 { color: #22d3ee; } .g-G2 { color: #a78bfa; } .g-G3 { color: #34d399; } .g-G4 { color: #fbbf24; }
+  [data-theme="light"] .g-G1 { color: #0891b2; } [data-theme="light"] .g-G2 { color: #7c3aed; }
+  [data-theme="light"] .g-G3 { color: #059669; } [data-theme="light"] .g-G4 { color: #b45309; }
+
+  .bar { height: 8px; border-radius: 999px; background: var(--off-soft); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--a1), var(--a2)); box-shadow: 0 0 14px var(--a1); transition: width .4s; }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .filters button { border: 1px solid var(--line-strong); background: transparent; color: var(--muted); border-radius: 999px; padding: 5px 14px;
+    font: inherit; font-size: 13px; cursor: pointer; transition: .15s; }
+  .filters button:hover { color: var(--text); }
+  .filters button.on { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--a2), var(--a1)); }
+  .gsum { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin-bottom: 16px; }
+  .gsum .card { padding: 16px; }
+  .gsum .gn { font-size: 12px; color: var(--muted); }
+  .gsum .gt { font-weight: 700; margin: 2px 0 8px; }
+
+  /* 타임라인 */
+  .tl { position: relative; padding-left: 28px; }
+  .tl::before { content: ''; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(180deg, var(--a1), var(--a2), transparent); opacity: .6; }
+  .phase { margin-bottom: 16px; }
+  .phase::after { content: ''; position: absolute; left: -26px; top: 22px; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--card-solid); border: 2px solid var(--a2); }
+  .phase.live::after { background: var(--a1); border-color: var(--a1); box-shadow: 0 0 14px var(--a1); }
+  .phase.fin::after { background: var(--ok); border-color: var(--ok); }
+  .phase h3 { justify-content: space-between; }
+  .task { display: flex; gap: 10px; align-items: flex-start; padding: 7px 0; font-size: 13.5px; cursor: pointer; border-bottom: 1px dashed var(--line); }
+  .task:last-child { border-bottom: 0; }
+  .task input { appearance: none; width: 18px; height: 18px; margin: 1px 0 0; border: 1.5px solid var(--line-strong); border-radius: 6px; flex: none;
+    display: grid; place-items: center; cursor: pointer; transition: .15s; background: transparent; }
+  .task input:checked { background: linear-gradient(135deg, var(--a1), var(--a2)); border-color: transparent; }
+  .task input:checked::after { content: '✓'; color: #fff; font-size: 12px; font-weight: 800; }
+  .task.done span { color: var(--muted); text-decoration: line-through; }
+
+  .muted { color: var(--muted); }
+  .small { font-size: 12.5px; }
+  img.flow { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 12px; display: block; }
+  ul.plain { margin: 0; padding: 0; list-style: none; }
+  ul.plain li { position: relative; margin: 6px 0; padding-left: 20px; font-size: 13.5px; }
+  ul.plain li::before { content: ''; position: absolute; left: 2px; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(135deg, var(--a1), var(--a2)); }
+  code { background: var(--off-soft); padding: 1px 6px; border-radius: 6px; font-size: 12.5px; font-family: ui-monospace,'Cascadia Code',Consolas,monospace; color: var(--a1); }
+  .goal { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  .goal:last-child { border-bottom: 0; }
+  .goal .gb { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 12.5px; background: var(--vio-soft); color: var(--a1); }
+
+  /* 챗봇 */
+  .chat { display: flex; flex-direction: column; height: 560px; }
+  .chat-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .orb { width: 40px; height: 40px; border-radius: 50%; flex: none; background: radial-gradient(circle at 30% 30%, #fff, var(--a1) 35%, var(--a2) 80%);
+    box-shadow: 0 0 24px var(--a1); animation: float 4s ease-in-out infinite; }
+  @keyframes float { 50% { transform: translateY(-3px); box-shadow: 0 0 34px var(--a2); } }
+  .chat-head b { display: block; }
+  .chat .log { flex: 1; overflow-y: auto; border: 1px solid var(--line); border-radius: 14px; padding: 14px; background: var(--input); }
+  .msg { max-width: 82%; margin: 8px 0; padding: 10px 14px; border-radius: 14px; font-size: 14px; white-space: pre-wrap; animation: rise .25s ease; }
+  .msg.me { margin-left: auto; color: #fff; border-bottom-right-radius: 4px; background: linear-gradient(135deg, var(--a2), var(--a1)); }
+  .msg.bot { background: var(--card-solid); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .typing i { display: inline-block; width: 6px; height: 6px; margin: 0 2px; border-radius: 50%; background: var(--a1); animation: blink 1.2s infinite; }
+  .typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100% { opacity: .2; } 40% { opacity: 1; } }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .chips button { border: 1px solid var(--line-strong); background: transparent; color: var(--muted); border-radius: 999px; padding: 5px 12px; font: inherit; font-size: 12.5px; cursor: pointer; }
+  .chips button:hover { color: var(--text); border-color: var(--a1); }
+  .chat form { display: flex; gap: 8px; margin-top: 10px; }
+  .chat input[type=text] { flex: 1; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--input); color: var(--text); font: inherit; outline: none; }
+  .chat input[type=text]:focus { border-color: var(--a1); box-shadow: 0 0 0 3px var(--info-soft); }
+  .chat form button { padding: 0 20px; border: 0; border-radius: 12px; color: #fff; font: inherit; font-weight: 700; cursor: pointer;
+    background: linear-gradient(135deg, var(--a2), var(--a1)); }
+
+  @media (max-width: 640px) { .g2 { grid-template-columns: 1fr; } header { padding: 20px 100px 0 24px; } .title h1 { font-size: 22px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.7 1.8L21.5 18.5l-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/>
+    </svg>
+  </div>
+  <div class="title">
+    <h1>HELPDESK</h1>
+    <p>도움말 문서를 지식 그래프로, 질문에는 근거와 함께 답하는 AI 헬프데스크</p>
+  </div>
+  <div class="spacer"></div>
+  <span class="pill"><span class="dot"></span>Phase 0~1 · 샘플 적재 완료</span>
+  <span class="pill"><span class="dot off"></span>챗봇 연동 전</span>
+</header>
+<button class="theme-switch" id="themeBtn" role="switch" aria-checked="true" title="다크 / 라이트 전환" aria-label="다크 / 라이트 전환">
+  <span class="ti sun">☀️</span><span class="ti moon">🌙</span><span class="knob"></span>
+</button>
+<nav><div class="tabs" id="tabs">
+  <button data-t="overview" class="on">개요</button>
+  <button data-t="kpi">KPI</button>
+  <button data-t="plan">작업 계획</button>
+  <button data-t="design">설계</button>
+  <button data-t="chat">챗봇</button>
+</div></nav>
+
+<main>
+  <!-- 개요 -->
+  <section id="overview" class="on">
+    <div class="grid g4" id="stats"></div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card"><h2>전체 흐름</h2><img class="flow" id="flowImg" src="images/flow-dark.svg" alt="HELPDESK 전체 흐름도"></div>
+      <div class="grid" style="align-content:start">
+        <div class="card"><h2>목표</h2><div id="goals"></div></div>
+        <div class="card"><h2>결정이 필요한 것 <span class="tag t-wait" id="decCnt"></span></h2><ul class="plain" id="decisions"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KPI -->
+  <section id="kpi">
+    <div class="gsum" id="gsum"></div>
+    <div class="card">
+      <h2>KPI 지표 <span class="muted small">목표값은 가안 · 현재값은 측정 시작 후 채워짐</span></h2>
+      <div class="filters" id="kpiFilters"></div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>ID</th><th>그룹</th><th>지표</th><th>목표(가안)</th><th>현재</th><th>단계</th><th>구분</th></tr></thead>
+        <tbody id="kpiBody"></tbody>
+      </table></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h2>단계별 통과 조건</h2>
+      <div class="tablewrap"><table>
+        <thead><tr><th>시점</th><th>통과 조건</th></tr></thead>
+        <tbody id="gateBody"></tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <!-- 작업 계획 -->
+  <section id="plan">
+    <div class="card" style="margin-bottom:18px">
+      <h2>전체 진행률 <span class="muted small" id="progTxt"></span></h2>
+      <div class="bar"><i id="progBar" style="width:0%"></i></div>
+      <p class="muted small" style="margin:10px 0 0">체크 상태는 이 브라우저에만 저장됩니다. 공식 기록은 <code>WorkLog.md</code> · <code>HANDOFF.md</code> 입니다.</p>
+    </div>
+    <div class="tl" id="phases"></div>
+    <div class="card"><h2>위험과 대응</h2>
+      <div class="tablewrap"><table><thead><tr><th>위험</th><th>영향</th><th>대응</th></tr></thead><tbody id="riskBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- 설계 -->
+  <section id="design">
+    <div class="grid g2">
+      <div class="card"><h2>테이블 가안 <span class="tag t-draft">승인 전</span></h2><div id="tables"></div></div>
+      <div class="card"><h2>온톨로지 노드 가안 <span class="tag t-draft">샘플 확인 후 확정</span></h2>
+        <div class="tablewrap"><table><thead><tr><th>노드</th><th>unique 키</th><th>의미</th></tr></thead><tbody id="nodeBody"></tbody></table></div>
+        <h3 style="margin-top:18px">엣지</h3>
+        <div class="tablewrap"><table><thead><tr><th>관계</th><th>방향</th><th>의미</th></tr></thead><tbody id="edgeBody"></tbody></table></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px"><h2>구성요소</h2>
+      <div class="tablewrap"><table><thead><tr><th>구성요소</th><th>구현</th><th>SDK</th></tr></thead><tbody id="compBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- 챗봇 -->
+  <section id="chat">
+    <div class="grid g2">
+      <div class="card chat">
+        <div class="chat-head"><div class="orb"></div><div><b>HELPDESK AI</b><span class="muted small">지식 그래프 기반 · 근거와 출처를 함께 답변</span></div>
+          <div class="spacer"></div><span class="tag t-off">연동 전</span></div>
+        <div class="log" id="chatLog"><div class="msg bot">안녕하세요. 챗봇은 Phase 3에서 연결됩니다. 지금은 화면 자리만 마련되어 있어요.</div></div>
+        <div class="chips" id="chips"></div>
+        <form id="chatForm"><input type="text" id="chatIn" placeholder="질문을 입력하세요 (연동 전)" autocomplete="off"><button type="submit">보내기</button></form>
+      </div>
+      <div class="card"><h2>연결 계획</h2>
+        <ul class="plain">
+          <li>검색 스킬이 질문을 받아 <code>Zio.node</code> 로 온톨로지를 탐색합니다.</li>
+          <li>답변 모델이 근거 청크의 문서명·위치를 붙여 답합니다.</li>
+          <li>이 패널에서 같은 스킬을 <code>/execute/&lt;함수&gt;</code> 로 호출하는 방식을 검토합니다. 호출 경로는 Phase 3에서 확정합니다.</li>
+          <li>대화 기록(<code>HDK_ChatLogMST</code> 가안)이 쌓이면 K6~K12 가 이 대시보드에 채워집니다.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+// ───────── 데이터 (Plan.md · KPI.md 와 동일한 내용. 문서를 고치면 여기도 맞춘다) ─────────
+const GOALS = [
+  ['G1', '지식화', '도움말 파일을 빠짐없이 구조화된 지식(온톨로지)으로 전환', '1차'],
+  ['G2', '답변 품질', '사용자 질문에 정확하고 근거가 있는 답을 제공', '1차'],
+  ['G3', '업무 효과', '문서를 찾고 답하는 사람의 수고를 줄임 (운영 후 측정)', '1차'],
+  ['G4', '자동 해결', '반복되는 문제를 도구 호출로 직접 해결', '2차'],
+];
+
+const KPIS = [
+  // id, 그룹, 지표, 목표, ★, 단계
+  ['K1','G1','문서 적재율','대상 파일의 100%',1,'Phase 1'],
+  ['K2','G1','분석 완료율','청크의 95% 이상',1,'Phase 2'],
+  ['K3','G1','지식 추출 정확도','샘플 검수 90% 이상',1,'Phase 2'],
+  ['K4','G1','근거 연결률','Symptom·Solution 100%',1,'Phase 2'],
+  ['K5','G1','노드 중복률','5% 이하',0,'Phase 2'],
+  ['K6','G2','답변 정확도','평가 질문셋 80% 이상',1,'Phase 3'],
+  ['K7','G2','출처 제시율','답변의 100%',1,'Phase 3'],
+  ['K8','G2','환각률','3% 이하',1,'Phase 3'],
+  ['K9','G2','미응답 적정률','문서 밖 질문 90% 이상',1,'Phase 3'],
+  ['K10','G2','응답 시간','P90 10초 이내',0,'Phase 3'],
+  ['K11','G3','자체 해결률','60% 이상',0,'운영'],
+  ['K12','G3','사용자 만족도','도움됨 70% 이상',0,'운영'],
+  ['K13','G3','문의 처리 시간','현재 대비 단축 (기준선 측정 후 확정)',0,'운영'],
+  ['K14','G3','지식 공백 해소','미응답 질문 월 N% 반영',0,'운영'],
+  ['K15','G4','도구 자동 해결률','대상 문의의 50% 이상',0,'2차'],
+  ['K16','G4','도구 호출 성공률','95% 이상',0,'2차'],
+  ['K17','G4','오조치율','0건',0,'2차'],
+];
+
+const GATES = [
+  ['Phase 1 완료','K1 = 100%'],
+  ['Phase 2 완료','K2 ≥ 95%, K3 ≥ 90%, K4 = 100%'],
+  ['Phase 3 완료 (1차 종료)','K6 ≥ 80%, K7 = 100%, K8 ≤ 3%, K9 ≥ 90%'],
+  ['시범 운영 1개월','K11 · K12 · K13 측정 시작, 2차 도구 대상 선정'],
+  ['2차 완료','K15 ≥ 50%, K16 ≥ 95%, K17 = 0건'],
+];
+
+// 각 작업의 두 번째 값: 이미 끝났으면 1
+const PHASES = [
+  ['Phase 0. 준비', [
+    ['작업계획서 초안 작성 (Plan.md)', 1],
+    ['목표·KPI 초안 작성 (KPI.md)', 1],
+    ['대시보드 초안 (이 페이지)', 1],
+    ['원본 파일 경로 확보, 형식별 샘플 확인', 0],
+    ['담당자 접미 확정, DataSource(15번) 검토', 0],
+    ['테이블·온톨로지 이름 확정 및 사용자 승인', 0],
+    ['checklist.md · context-notes.md 작성', 0],
+  ]],
+  ['Phase 1. 적재', [
+    ['HDK_DocMST · HDK_ChunkMST · HDK_KnowMST 생성 (postgresql-worker)', 1],
+    ['PDF 추출·청크 분할 — 샘플 1건 적재 완료 (조각은 수동 정리, 자동 분할 미구현)', 1],
+    ['PPT·XLSX 파서 (python-worker)', 0],
+    ['중복 적재 방지 (파일 해시) — 재실행으로 확인', 1],
+    ['폴더 일괄 적재 함수와 문서별 청크 수 리포트', 0],
+  ]],
+  ['Phase 2. 분석 → 온톨로지', [
+    ['샘플 청크로 추출 형식 시험, 노드·엣지 확정', 0],
+    ['설계서 생성 (Zio.ontology.create, warnings 비어 있음)', 0],
+    ['분석 에이전트 초안 (skill → model → ontology_link)', 0],
+    ['샘플 debug 후 전체 실행', 0],
+    ['표기 정리(노드 통합) — 대상 확인 후 승인된 것만', 0],
+  ]],
+  ['Phase 3. 챗봇 Q&A', [
+    ['검색 스킬 (where_or · with_relations)', 0],
+    ['챗봇 에이전트 초안 (검색 skill → 답변 model)', 0],
+    ['답변 규칙: 출처 필수, 그래프에 없으면 모른다고 답함', 0],
+    ['이 대시보드에 챗봇 패널 연결', 0],
+    ['평가 질문셋 30~50개로 정답률 측정', 0],
+  ]],
+  ['Phase 4. 문제해결 도구 (2차)', [
+    ['자동화 가능한 조치 후보 추출 및 선택', 0],
+    ['Zio.tools.create 로 도구 등록 (초안) → 웹에서 활성화', 0],
+    ['챗봇에 도구 연결, 변경성 도구는 사용자 확인 후 실행', 0],
+  ]],
+];
+
+const DECISIONS = [
+  '원본 파일 경로',
+  '담당자 접미 (테이블·라벨 이름에 박힘)',
+  '챗봇 화면 형태 (에이전트 빌더 채팅 / 이 대시보드에 통합)',
+  '테이블·온톨로지 가안 승인',
+  '스캔본·이미지 문서 포함 여부 (OCR 범위)',
+  'KPI 목표값 조정 (특히 정답 80%, 환각 3%)',
+  '현재 헬프데스크 업무의 기준선 측정 가능 여부',
+  '평가 질문셋 작성 담당자',
+  '로그 테이블 추가 여부, 질문 로그 보관·마스킹 방침',
+];
+
+const RISKS = [
+  ['usr 테이블 컬럼 변경 불가','설계 오류 시 새 이름으로 재생성','Phase 0에서 승인 후 생성'],
+  ['온톨로지 unique 누락','재실행마다 노드 중복','설계서 검토 체크리스트에 포함'],
+  ['라벨·테이블 이름 충돌','다른 담당자 프로젝트와 부딪침','도메인 접두 + 담당자 접미'],
+  ['스캔 PDF·이미지 슬라이드','텍스트 추출 실패','샘플에서 비율 확인, 많으면 OCR 협의'],
+  ['LLM 추출 품질','잘못된 해결방법이 그래프에 들어감','근거 청크 항상 연결, 샘플 검수 후 전체 실행'],
+  ['문서 갱신','그래프와 원본 불일치','파일 해시로 변경 감지 (후순위)'],
+  ['의존성 설치 90초 제한','pypdf 등 설치 중 끊김','.venv 삭제 후 재기동'],
+  ['에이전트·도구는 SDK로 활성화 불가','자동 배포 불가','웹 빌더에서 수동 활성화'],
+];
+
+const TABLES = [
+  // 이름, 설명, 필드, 상태(1=생성됨), 현재 행 수
+  ['HDK_DocMST','문서 1건 (파일 1개)','docID(PK) · fileNm · filePath · fileTy · fileHash · title · docTy · pageCnt · charCnt · imgDir · dataPath · summary · procSt · Rmk · 공통',1,'1행'],
+  ['HDK_ChunkMST','문서를 쪼갠 조각 (분석·검색·근거 단위)','chunkID(PK) · docID · seqNo · locTy · pageNo · pageEndNo · secNo · title · content · charCnt · imgFile · anlSt · 공통',1,'5행'],
+  ['HDK_KnowMST','조각에서 추출한 지식 (온톨로지 후보)','knowID(PK) · docID · chunkID · seqNo · kind · subject · statement · evidence · relType · relTarget · attrJson · confidence · anaBy · 공통',1,'19행'],
+  ['HDK_ChatLogMST','질문·답변 기록 (K6~K12)','chatID · sessionID · question · answer · srcList · respMs · feedback · resolvedFg · 공통',0,'가안'],
+  ['HDK_ToolLogMST','도구 호출 기록 (K15~K17)','callID · chatID · toolID · argJson · resultSt · confirmFg · 공통',0,'가안'],
+  ['HDK_EvalQMST','평가 질문셋 (K6~K9)','qID · question · expectedAns · expectedDoc · hasAnsFg',0,'가안'],
+];
+
+const NODES = [
+  ['Document','docID','원본 문서'],['Chunk','chunkID','근거 위치'],['Topic','topicNm','기능·주제·메뉴'],
+  ['Symptom','symptomNm','문의 증상·오류 메시지'],['Cause','causeNm','원인'],['Solution','solutionNm','해결 방법'],
+  ['Step','stepKey','해결 절차 단계'],['Term','termNm','용어·약어'],
+];
+const EDGES = [
+  ['FROM_DOC','Chunk → Document','조각의 출처'],['ABOUT','Symptom/Solution → Topic','어떤 주제에 대한 것인가'],
+  ['CAUSED_BY','Symptom → Cause','증상의 원인'],['SOLVED_BY','Symptom/Cause → Solution','해결 방법'],
+  ['HAS_STEP','Solution → Step','절차'],['EVIDENCED_BY','Topic/Symptom/Solution → Chunk','근거 조각 (출처 표기의 길)'],
+  ['DEFINES','Chunk → Term','용어 정의 위치'],
+];
+const COMPS = [
+  ['적재 스킬','HELPDESK_ingest 폴더의 @zio_skill 함수','Zio.entity'],
+  ['파서','requirements.txt: pymupdf (PDF 적용) · python-pptx · openpyxl (예정)','(순수 Python)'],
+  ['온톨로지 설계서','노드·엣지·unique·source 정의','Zio.ontology.create'],
+  ['분석 에이전트','skill + model + ontology_link 노드','Zio.agent.create'],
+  ['그래프 저장','설계서대로 노드·엣지 생성','Zio.ontology(twin_id, entry).save'],
+  ['검색 스킬','질문 키워드 → 그래프 탐색 → 근거 반환','Zio.node'],
+  ['챗봇 에이전트','skill(검색) → model(답변)','Zio.agent.create'],
+  ['도구 (2차)','REST / 원격 MCP 등록 후 모델이 호출','Zio.tools'],
+];
+const SAMPLES = ['로그인이 안 될 때 어떻게 하나요?', '비밀번호 초기화 절차 알려줘', '이 오류 메시지의 원인은?'];
+
+// ───────── 유틸 ─────────
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rows = (arr, fn) => arr.map(fn).join('');
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* 저장소를 못 쓰면 이번 세션만 유지 */ } },
+};
+
+// ───────── 테마 ─────────
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  $('#themeBtn').setAttribute('aria-checked', t === 'dark');
+  $('#flowImg').src = t === 'dark' ? 'images/flow-dark.svg' : 'images/flow.svg';
+  store.set('helpdesk.theme', t);
+}
+$('#themeBtn').onclick = () => applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+
+// ───────── 탭 ─────────
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('main section').forEach(s => s.classList.toggle('on', s.id === b.dataset.t));
+  store.set('helpdesk.tab', b.dataset.t);
+});
+
+// ───────── 진행 상태 (체크박스) ─────────
+const checks = store.get('helpdesk.checks', {});
+const isDone = (pi, ti) => (pi + '-' + ti) in checks ? checks[pi + '-' + ti] : !!PHASES[pi][1][ti][1];
+
+function progress() {
+  let total = 0, done = 0;
+  PHASES.forEach((p, pi) => p[1].forEach((t, ti) => { total++; if (isDone(pi, ti)) done++; }));
+  return { total, done, pct: total ? Math.round(done / total * 100) : 0 };
+}
+
+function renderStats() {
+  const p = progress();
+  const star = KPIS.filter(k => k[4]).length;
+  $('#stats').innerHTML =
+    `<div class="card stat"><div class="ring" style="--p:${p.pct}"><b>${p.pct}%</b></div><div><div class="lbl">작업 진행률</div><div class="num">${p.done}/${p.total}</div><div class="cap">완료한 작업</div></div></div>` +
+    `<div class="card stat"><div class="ico">🧭</div><div><div class="lbl">현재 단계</div><div class="num">Phase 0~1</div><div class="cap">준비 · 샘플 PDF 1건 적재 완료</div></div></div>` +
+    `<div class="card stat"><div class="ico">🎯</div><div><div class="lbl">1차 판정 KPI</div><div class="num">${star}개</div><div class="cap">전체 ${KPIS.length}개 · 측정 0개</div></div></div>` +
+    `<div class="card stat"><div class="ico">⏳</div><div><div class="lbl">결정 대기</div><div class="num">${DECISIONS.length}건</div><div class="cap">사용자 확인 필요</div></div></div>`;
+}
+
+function renderPhases() {
+  $('#phases').innerHTML = rows(PHASES, (p, pi) => {
+    const n = p[1].length, d = p[1].filter((t, ti) => isDone(pi, ti)).length;
+    const cls = d === n ? 'fin' : d ? 'live' : '';
+    return `<div class="card phase ${cls}"><h3>${esc(p[0])}<span class="tag ${d === n ? 't-ok' : d ? 't-wait' : 't-off'}">${d} / ${n}</span></h3>` +
+      rows(p[1], (t, ti) => `<label class="task ${isDone(pi, ti) ? 'done' : ''}"><input type="checkbox" data-p="${pi}" data-t="${ti}" ${isDone(pi, ti) ? 'checked' : ''}><span>${esc(t[0])}</span></label>`) + '</div>';
+  });
+  document.querySelectorAll('#phases input').forEach(i => i.onchange = () => {
+    checks[i.dataset.p + '-' + i.dataset.t] = i.checked;
+    store.set('helpdesk.checks', checks);
+    renderPhases(); renderProgress(); renderStats();
+  });
+}
+
+function renderProgress() {
+  const p = progress();
+  $('#progBar').style.width = p.pct + '%';
+  $('#progTxt').textContent = `${p.done} / ${p.total} (${p.pct}%)`;
+}
+
+// ───────── KPI ─────────
+let kpiFilter = 'ALL';
+function renderKpi() {
+  const f = [['ALL','전체'],['STAR','1차 판정(★)'],['G1','G1 지식화'],['G2','G2 답변 품질'],['G3','G3 업무 효과'],['G4','G4 자동 해결']];
+  $('#kpiFilters').innerHTML = rows(f, x => `<button data-f="${x[0]}" class="${kpiFilter === x[0] ? 'on' : ''}">${x[1]}</button>`);
+  document.querySelectorAll('#kpiFilters button').forEach(b => b.onclick = () => { kpiFilter = b.dataset.f; renderKpi(); });
+  const list = KPIS.filter(k => kpiFilter === 'ALL' || (kpiFilter === 'STAR' ? k[4] : k[1] === kpiFilter));
+  $('#kpiBody').innerHTML = rows(list, k => `<tr><td class="kid">${k[0]}</td><td><span class="grp g-${k[1]}">${k[1]}</span></td><td>${esc(k[2])}</td><td>${esc(k[3])}</td>` +
+    `<td><span class="tag t-off">측정 전</span></td><td>${esc(k[5])}</td><td>${k[4] ? '<span class="tag t-star">★ 1차 판정</span>' : '<span class="muted">추적</span>'}</td></tr>`);
+}
+
+function renderGroupSummary() {
+  $('#gsum').innerHTML = rows(GOALS, g => {
+    const all = KPIS.filter(k => k[1] === g[0]), st = all.filter(k => k[4]).length;
+    return `<div class="card"><div class="gn g-${g[0]}">${g[0]} · ${g[3]}</div><div class="gt">${esc(g[1])}</div>` +
+      `<div class="small muted">KPI ${all.length}개 · 1차 판정 ${st}개</div><div class="bar" style="margin-top:10px"><i style="width:0%"></i></div><div class="small muted" style="margin-top:4px">측정 0 / ${all.length}</div></div>`;
+  });
+}
+
+// ───────── 챗봇 자리 ─────────
+function ask(v) {
+  const log = $('#chatLog');
+  log.insertAdjacentHTML('beforeend', `<div class="msg me">${esc(v)}</div><div class="msg bot typing" id="typing"><i></i><i></i><i></i></div>`);
+  log.scrollTop = log.scrollHeight;
+  setTimeout(() => {
+    const t = $('#typing');
+    if (t) { t.classList.remove('typing'); t.removeAttribute('id'); t.textContent = '챗봇 연동 전입니다. Phase 3에서 연결됩니다.'; }
+    log.scrollTop = log.scrollHeight;
+  }, 900);
+}
+$('#chatForm').onsubmit = e => {
+  e.preventDefault();
+  const v = $('#chatIn').value.trim();
+  if (!v) return;
+  $('#chatIn').value = '';
+  ask(v);
+};
+$('#chips').innerHTML = rows(SAMPLES, s => `<button type="button">${esc(s)}</button>`);
+document.querySelectorAll('#chips button').forEach(b => b.onclick = () => ask(b.textContent));
+
+// ───────── 렌더 ─────────
+$('#goals').innerHTML = rows(GOALS, g => `<div class="goal"><div class="gb g-${g[0]}">${g[0]}</div><div><b>${esc(g[1])}</b> <span class="tag t-off">${g[3]}</span><div class="muted small">${esc(g[2])}</div></div></div>`);
+$('#decisions').innerHTML = rows(DECISIONS, d => `<li>${esc(d)}</li>`);
+$('#decCnt').textContent = DECISIONS.length + '건';
+$('#gateBody').innerHTML = rows(GATES, g => `<tr><td>${esc(g[0])}</td><td>${esc(g[1])}</td></tr>`);
+$('#riskBody').innerHTML = rows(RISKS, r => `<tr><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`);
+$('#tables').innerHTML = rows(TABLES, t => `<div style="margin-bottom:12px"><b class="kid">${esc(t[0])}</b> ` +
+  `<span class="tag ${t[3] ? 't-ok' : 't-draft'}">${t[3] ? '생성됨 · ' + esc(t[4]) : '가안'}</span> <span class="muted small">${esc(t[1])}</span><div class="small">${esc(t[2])}</div></div>`) +
+  '<p class="muted small">usr 테이블은 컬럼 추가·삭제가 안 됩니다. 생성된 3개는 PDF 1건(RAG vs 온톨로지)으로 적재한 상태이고, 가안 3개는 승인 후 생성합니다.</p>';
+$('#nodeBody').innerHTML = rows(NODES, n => `<tr><td class="kid">${esc(n[0])}</td><td>${esc(n[1])}</td><td>${esc(n[2])}</td></tr>`);
+$('#edgeBody').innerHTML = rows(EDGES, n => `<tr><td class="kid">${esc(n[0])}</td><td>${esc(n[1])}</td><td>${esc(n[2])}</td></tr>`);
+$('#compBody').innerHTML = rows(COMPS, n => `<tr><td>${esc(n[0])}</td><td>${esc(n[1])}</td><td><code>${esc(n[2])}</code></td></tr>`);
+renderStats(); renderPhases(); renderProgress(); renderKpi(); renderGroupSummary();
+applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+
+const savedTab = store.get('helpdesk.tab', 'overview');
+const tabBtn = document.querySelector(`#tabs button[data-t="${savedTab}"]`);
+if (tabBtn) tabBtn.click();
+</script>
+</body>
+</html>

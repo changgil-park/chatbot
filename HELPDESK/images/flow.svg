@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 575" width="1280" height="575" font-family="'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+    </marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b45309"/>
+    </marker>
+  </defs>
+  <rect width="1280" height="575" fill="#ffffff"/>
+
+  <!-- 밴드 -->
+  <rect x="10" y="30" width="1260" height="150" rx="10" fill="#f1f5f9"/>
+  <rect x="10" y="225" width="1260" height="140" rx="10" fill="#f0fdf4"/>
+  <rect x="10" y="405" width="1260" height="145" rx="10" fill="#fffbeb"/>
+  <text x="26" y="56" font-size="15" font-weight="700" fill="#334155">구축 (1차) — 파일을 지식 그래프로</text>
+  <text x="26" y="251" font-size="15" font-weight="700" fill="#166534">질의응답 (1차)</text>
+  <text x="26" y="431" font-size="15" font-weight="700" fill="#92400e">문제해결 (2차)</text>
+
+  <!-- 1행 -->
+  <g font-size="16" text-anchor="middle" fill="#0f172a">
+    <rect x="30" y="80" width="160" height="76" rx="8" fill="#e2e8f0" stroke="#64748b"/>
+    <text x="110" y="112" font-weight="700">원본 파일</text>
+    <text x="110" y="136" font-size="13" fill="#475569">PDF · PPT · XLSX</text>
+
+    <rect x="245" y="80" width="160" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="325" y="112" font-weight="700">① 적재</text>
+    <text x="325" y="136" font-size="13" fill="#475569">스킬 (파싱·청크 분할)</text>
+
+    <rect x="460" y="80" width="160" height="76" rx="8" fill="#dbeafe" stroke="#2563eb"/>
+    <text x="540" y="112" font-weight="700">usr 테이블</text>
+    <text x="540" y="136" font-size="13" fill="#475569">DocMST · ChunkMST</text>
+
+    <rect x="675" y="80" width="160" height="76" rx="8" fill="#ede9fe" stroke="#7c3aed"/>
+    <text x="755" y="112" font-weight="700">② 분석</text>
+    <text x="755" y="136" font-size="13" fill="#475569">에이전트 (LLM 추출)</text>
+
+    <rect x="890" y="80" width="160" height="76" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="970" y="112" font-weight="700">온톨로지</text>
+    <text x="970" y="136" font-size="13" fill="#475569">Neo4j 지식 그래프</text>
+  </g>
+  <g stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)">
+    <line x1="190" y1="118" x2="243" y2="118"/>
+    <line x1="405" y1="118" x2="458" y2="118"/>
+    <line x1="620" y1="118" x2="673" y2="118"/>
+    <line x1="835" y1="118" x2="888" y2="118"/>
+  </g>
+
+  <!-- 2행 -->
+  <g font-size="16" text-anchor="middle" fill="#0f172a">
+    <rect x="1105" y="270" width="140" height="76" rx="8" fill="#e2e8f0" stroke="#64748b"/>
+    <text x="1175" y="312" font-weight="700">사용자 질문</text>
+
+    <rect x="890" y="270" width="160" height="76" rx="8" fill="#dcfce7" stroke="#16a34a"/>
+    <text x="970" y="302" font-weight="700">③ 챗봇</text>
+    <text x="970" y="326" font-size="13" fill="#475569">에이전트 (검색+답변)</text>
+
+    <rect x="675" y="270" width="160" height="76" rx="8" fill="#e2e8f0" stroke="#64748b"/>
+    <text x="755" y="302" font-weight="700">답변</text>
+    <text x="755" y="326" font-size="13" fill="#475569">근거·출처 포함</text>
+  </g>
+  <g stroke="#475569" stroke-width="2" fill="none" marker-end="url(#a)">
+    <line x1="970" y1="156" x2="970" y2="268"/>
+    <line x1="1105" y1="308" x2="1052" y2="308"/>
+    <line x1="890" y1="308" x2="837" y2="308"/>
+  </g>
+  <text x="982" y="218" font-size="13" fill="#334155">검색 (Zio.node)</text>
+
+  <!-- 3행 (2차) -->
+  <g font-size="16" text-anchor="middle" fill="#0f172a">
+    <rect x="890" y="450" width="160" height="76" rx="8" fill="#fef3c7" stroke="#d97706" stroke-dasharray="6 4"/>
+    <text x="970" y="482" font-weight="700">④ 도구</text>
+    <text x="970" y="506" font-size="13" fill="#475569">REST · 원격 MCP</text>
+
+    <rect x="675" y="450" width="160" height="76" rx="8" fill="#fef3c7" stroke="#d97706" stroke-dasharray="6 4"/>
+    <text x="755" y="482" font-weight="700">문제 해결</text>
+    <text x="755" y="506" font-size="13" fill="#475569">조치 실행·결과 확인</text>
+  </g>
+  <g stroke="#b45309" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#b)">
+    <line x1="970" y1="346" x2="970" y2="448"/>
+    <line x1="890" y1="488" x2="837" y2="488"/>
+  </g>
+  <text x="982" y="403" font-size="13" fill="#92400e">도구 호출 (에이전트가 직접)</text>
+</svg>
