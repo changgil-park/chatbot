@@ -1,0 +1,17 @@
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore environment variables
+.env
+.venv/
+env/
+
+# Ignore caches and dependencies
+__pycache__/
+*.pyc
+node_modules/
+
+# HELPDESK: 매뉴얼 이미지(수백 MB)와 스킬 실행 로그는 git 에 올리지 않는다
+HELPDESK/manual_images/LZXP*/
+.skill_stderr.log
